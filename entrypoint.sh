@@ -9,7 +9,5 @@ fi
 # Run Trivy and generate results
 trivy rootfs --format json --scanners vuln,misconfig,secret -o report.json .
 
-cat report.json
-
 # Parse and create issues
-python /trivy_parser.py ./report.json
+python /trivy_parser.py report.json
