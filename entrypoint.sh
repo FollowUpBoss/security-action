@@ -22,17 +22,7 @@ fi
 # fi
 
 # Run Trivy and generate results
-trivy rootfs --format json --scanners vulns,misconfig,secret -o report.json .
+trivy rootfs --format json --scanners vuln,misconfig,secret -o report.json .
 
 # Parse and create issues
 python /trivy_parser.py report.json
-
-# Associate issues with the specified project
-if [ -n "${INPUT_PROJECT_ID-}" ]; then
-	echo "Creating cards in the project $INPUT_PROJECT_ID..."
-	issue_numbers=$(gh --repo "$GITHUB_REPOSITORY" issue list --label "$INPUT_LABEL" --json number --jq '.[].number')
-	echo "$issue_numbers" | while read -r number; do
-		issue_id=$(gh api /repos/${GITHUB_REPOSITORY}/issues/${number} --jq .id)
-		gh api /projects/columns/${INPUT_PROJECT_ID}/cards -F content_id=$issue_id -F content_type="Issue"
-	done
-fi
