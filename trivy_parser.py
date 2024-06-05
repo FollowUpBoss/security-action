@@ -70,10 +70,13 @@ def abort(text: str):
 
 def comments(comment_body: str) -> None:
     gh_repo: str = os.environ.get("GITHUB_REPOSITORY")
+    print(gh_repo)
     gh_token: str = os.environ.get("GH_TOKEN")
+    print(gh_token)
     pull: str = os.environ.get("GITHUB_REF_NAME")
-    #pull: str = os.environ.get("CIRCLE_PULL_REQUEST")
+    print(pull)
     gh_pull: int = re.search(r'\d+', pull).group(0)
+    print(gh_pull)
     if not gh_repo:
         abort("Env variable GITHUB_REPOSITORY is not set correctly")
     if not gh_pull:
