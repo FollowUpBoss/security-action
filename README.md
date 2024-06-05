@@ -8,6 +8,7 @@
 ## Table of Contents
 
 - [Usage](#usage)
+- [Features](#features)
 
 ## Usage
 
@@ -33,3 +34,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+## Features
+Action uses [Trivy](https://trivy.dev) to perform scanning. Currently it is configured:
+- Run Misconfiguration scanning against Infrastructure as Code
+- Output the scan in json format
+- Parse and validate scan output
+- Generate or Update a PR comment
