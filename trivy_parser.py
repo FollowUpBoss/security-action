@@ -69,9 +69,6 @@ def abort(text: str):
 
 
 def comments(comment_body: str) -> None:
-    # if not os.environ.get("CIRCLE_PULL_REQUEST"):
-    #     raise ValueError("Workflow executing without a Pull Request.")
-    #gh_repo: str = "FollowUpBoss/" + os.environ.get("CIRCLE_PROJECT_REPONAME")
     gh_repo: str = os.environ.get("GITHUB_REPOSITORY")
     gh_token: str = os.environ.get("GH_TOKEN")
     pull: str = os.environ.get("GITHUB_REF_NAME")
@@ -165,7 +162,7 @@ def generate_comment(
         mediums: list,
         lows: list
         ) -> str:
-    repo: str = "FollowUpBoss/" + os.environ.get("CIRCLE_PROJECT_REPONAME")
+    repo: str = os.environ.get("GITHUB_REPOSITORY")
     startline: int = None
     endline: int = None
     filename: str = None
