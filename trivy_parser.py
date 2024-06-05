@@ -71,16 +71,13 @@ def abort(text: str):
 def comments(comment_body: str) -> None:
     gh_repo: str = os.environ.get("GITHUB_REPOSITORY")
     gh_token: str = os.environ.get("GITHUB_TOKEN")
-    print(gh_token)
     pull: str = os.environ.get("GITHUB_REF_NAME")
     gh_pull: int = re.search(r'\d+', pull).group(0)
     if not gh_repo:
         abort("Env variable GITHUB_REPOSITORY is not set correctly")
     if not gh_pull:
         abort("Env variable GITHUB_REF_NAME is not being read correctly")
-    print(
-        f'Getting comments for {gh_repo}/pull/{gh_pull}'
-    )
+    print(f'Getting comments for {gh_repo}/pull/{gh_pull}')
     if not gh_token:
         abort("Env variable GH_TOKEN is not set correctly")
 
@@ -337,6 +334,7 @@ def main():
 
     try:
         comment = generate_comment(criticals, highs, mediums, lows)
+        print("Reported Findings")
     except TypeError as e:
         abort(f"Type Error: Failed to generate comment data. Error: {e}")
     except KeyError as e:
