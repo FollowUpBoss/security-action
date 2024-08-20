@@ -85,12 +85,12 @@ def comments(comment_body: str) -> None:
     gh = Github(auth=auth)
     repo = gh.get_repo(gh_repo)
     pr = repo.get_pull(int(gh_pull))
-    scanner_comment:str = None
+    scanner_comment = None
     comments = pr.get_issue_comments()
     for comment in comments:
         if "<Scan Results>" in comment.body:
             scanner_comment = comment
-    
+
     if scanner_comment is None:
         pr.create_issue_comment(comment_body)
     else:
@@ -106,7 +106,7 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
         raise KeyError(
             f"The JSON entry Results section is not a list, got: {type(results).__name__}"
         )
-    
+
     reports: OrderedDict[str, Issue] = collections.OrderedDict()
 
     for idx, result in enumerate(results):
@@ -126,7 +126,7 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
                 resolution = misconfig["Resolution"]
                 url = misconfig["PrimaryURL"]
                 message = misconfig["Message"]
-                
+
                 report_id: str = f"{id}:{avdid}"
                 report: Report = Report(
                     kind="Misconfig",
@@ -148,9 +148,9 @@ def parse_misconfigs(reports: Iterator[Report], severity: str) -> list:
             if severity in misconfig['Severity']:
                 misconfig['Target'] = target
                 misconfigs.append(misconfig)
-                            
+
     return misconfigs
-            
+
 
 
 def generate_comment(
@@ -169,7 +169,7 @@ def generate_comment(
     medium_count: int = 0
     low_count: int = 0
     row: str = ''
-    
+
     for misconfig in criticals:
         misconfig['Severity'] = '${\color{red}{\\textsf{Critical}}}$'
         if misconfig["CauseMetadata"]:
@@ -294,9 +294,9 @@ def generate_comment(
 | Severity | File | ID | Description |
 | - | - | - | - |
 """
-    comment_body += row    
+    comment_body += row
     return comment_body
-    
+
 
 
 def main():
@@ -321,7 +321,7 @@ def main():
         abort(f"Failed to parse JSON report. Error: {e}")
     except KeyError as e:
         abort(f"No results from scan. Error: {e}")
-    
+
     try:
         criticals: list = parse_misconfigs(reports, "CRITICAL")
         highs: list = parse_misconfigs(reports, "HIGH")
