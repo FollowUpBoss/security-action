@@ -1,0 +1,21 @@
+# Ignore these ids when scanning
+misconfigurations:
+  - id: AVD-AWS-0104
+    statement: This misconfiguration finding is related to allowing an open egress security group rule. Open egress rules are accepted as WAF manages ingress and egress rules.
+  - id: AVD-AWS-0057
+    statement: This misconfiguration finding is related to IAM policy using wildcards. The policy in use aligns with internal documentation recommendations and is not using wildcards.  The method of definition is causing false positives of this specific finding.
+  - id: DS002
+    paths:
+      - ".circleci/Dockerfile"
+    statement: This misconfiguration finding is related to detection of an image user being root. This risk is accepted due to use of CircleCI, where it's not possible to reconfigure the image user as a nonroot user.  This risk is accepted as long as CircleCI is used and only where the container is a CircleCI Dockerfile build container.
+  - id: AVD-AWS-0012
+    paths:
+      - "global/cloudfront/main.tf"
+    statement: This misconfiguration finding is related to allowing HTTP traffic for CloudFront distribution communication. This is a false positive finding as HTTPS cannot be required when using a S3 origin with a static website hosting endpoint.
+  - id: AVD-AWS-0107
+    statement: This misconfiguration finding is related to an open ingress security group rule.  This is an accepted risk as the open rule is required for SSO authentication.
+secrets:
+  - id: aws-access-key-id
+    paths:
+      - "global/iam/iam_user.tf"
+    statement: This secret finding is related to exposure of a secret.  This is a false positive as no secret is exposed.
