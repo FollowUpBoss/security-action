@@ -7,7 +7,7 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 fi
 
 # Run Trivy and generate results
-trivy rootfs --format json --scanners misconfig -o report.json --ignorefile /trivyignore.yaml .
+trivy rootfs --format json --scanners misconfig --ignorefile ${GITHUB_WORKSPACE}/.circleci/security/.trivyignore.yaml -o report.json .
 
 # Parse and create issues
 python /trivy_parser.py report.json
