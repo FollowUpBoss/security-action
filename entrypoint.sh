@@ -6,8 +6,7 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 	exit 1
 fi
 
-# Generate Diff to run scan against
-git diff origin > diff
+git diff --no-index origin > diff
 
 # Run Trivy and generate results
 trivy rootfs --format json --scanners misconfig --ignorefile .circleci/security/.trivyignore.yaml -o report.json diff
