@@ -6,6 +6,9 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 	exit 1
 fi
 
+echo $GITHUB_REF
+echo $GITHUB_REF_NAME
+
 PR=`echo $GITHUB_REF_NAME | cut -d '/' -f1`
 
 # Get list of files changed by the PR Branch
