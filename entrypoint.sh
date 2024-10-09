@@ -6,6 +6,7 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 	exit 1
 fi
 
+echo $GITHUB_HEAD_REF
 
 git diff origin/main origin/${GITHUB_HEAD_REF} > diff
 #PR=`echo $GITHUB_REF_NAME | cut -d '/' -f1`
