@@ -12,7 +12,7 @@ PR=`echo $GITHUB_REF_NAME | cut -d '/' -f1`
 files='(curl -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-  "https://api.github.com/repos/${GITHUB_REPOSITORY}/PULLS/${PR}/files" | jq '.[] | .filename')'
+  "https://api.github.com/repos/${GITHUB_REPOSITORY}/PULLS/${PR}/files" | jq ".[] | .filename")'
 
 # Copy the modified/added files to a folder
 mkdir files
