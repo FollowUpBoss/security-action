@@ -8,6 +8,10 @@ inputs:
   token:
     description: "GitHub token"
     required: true
+  scan-type:
+    description: "Scan type, either diff or branch"
+    required: false
+    default: "branch"
 runs:
   using: "docker"
   image: "Dockerfile"
