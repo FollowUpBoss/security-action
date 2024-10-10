@@ -72,12 +72,12 @@ def comments(comment_body: str) -> None:
     gh_repo: str = os.environ.get("GITHUB_REPOSITORY")
     gh_token: str = os.environ.get("GITHUB_TOKEN")
     pull: str = os.environ.get("GITHUB_REF_NAME")
-    gh_pull: int = re.search(r'\d+', pull).group(0)
+    gh_pull: int = re.search(r"\d+", pull).group(0)
     if not gh_repo:
         abort("Env variable GITHUB_REPOSITORY is not set correctly")
     if not gh_pull:
         abort("Env variable GITHUB_REF_NAME is not being read correctly")
-    print(f'Getting comments for {gh_repo}/pull/{gh_pull}')
+    print(f"Getting comments for {gh_repo}/pull/{gh_pull}")
     if not gh_token:
         abort("Env variable GH_TOKEN is not set correctly")
 
@@ -102,6 +102,7 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
         results = data["Results"]
     except Exception as e:
         raise KeyError(f" The JSON entry does not contain the Results key. Error {e}")
+        # Add function to comment 0 findings
     if not isinstance(results, list):
         raise KeyError(
             f"The JSON entry Results section is not a list, got: {type(results).__name__}"
@@ -120,13 +121,6 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
             for misconfig in misconfigs:
                 id = misconfig["ID"]
                 avdid = misconfig["AVDID"]
-                title = misconfig["Title"]
-                description = misconfig["Description"]
-                severity = misconfig["Severity"]
-                resolution = misconfig["Resolution"]
-                url = misconfig["PrimaryURL"]
-                message = misconfig["Message"]
-
                 report_id: str = f"{id}:{avdid}"
                 report: Report = Report(
                     kind="Misconfig",
@@ -138,27 +132,32 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
 
     return reports.values()
 
+
 def parse_misconfigs(reports: Iterator[Report], severity: str) -> list:
     misconfigs: list = []
     for report in reports:
         target: str = report.target
-        for misconfig_idx, misconfig in enumerate(
-            report.misconfigs, start=1
-        ):
-            if severity in misconfig['Severity']:
-                misconfig['Target'] = target
+        for misconfig_idx, misconfig in enumerate(report.misconfigs, start=1):
+            if severity in misconfig["Severity"]:
+                misconfig["Target"] = target
                 misconfigs.append(misconfig)
 
     return misconfigs
 
 
+def zero_findings() -> str:
+    repo: str = os.environ.get("GITHUB_REPOSITORY")
+    comment_body: str = f"""
+<Scan Results>
 
-def generate_comment(
-        criticals: list,
-        highs: list,
-        mediums: list,
-        lows: list
-        ) -> str:
+#### For full details connect to staging VPN and see [Defectdojo](https://defectdojo.reclients.com/product/7/finding/open?verified=true)
+
+#### :godmode: No Findings!
+"""
+    return comment_body
+
+
+def generate_comment(criticals: list, highs: list, mediums: list, lows: list) -> str:
     repo: str = os.environ.get("GITHUB_REPOSITORY")
     startline: int = None
     endline: int = None
@@ -168,116 +167,111 @@ def generate_comment(
     high_count: int = 0
     medium_count: int = 0
     low_count: int = 0
-    row: str = ''
+    row: str = ""
 
     for misconfig in criticals:
-        misconfig['Severity'] = '${\color{red}{\\textsf{Critical}}}$'
+        misconfig["Severity"] = "${\color{red}{\\textsf{Critical}}}$"
         if misconfig["CauseMetadata"]:
             causedata: dict = misconfig["CauseMetadata"]
             occurrences: list = causedata.get("Occurrences", [])
             if occurrences:
                 for occurrence in occurrences:
-                    startline = occurrence['Location']['StartLine']
-                    endline = occurrence['Location']['EndLine']
-                    filename = occurrence['Filename']
+                    startline = occurrence["Location"]["StartLine"]
+                    endline = occurrence["Location"]["EndLine"]
+                    filename = occurrence["Filename"]
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
             else:
                 startline: int = causedata.get("StartLine", int)
                 endline: int = causedata.get("EndLine", int)
-                filename = misconfig['Target']
+                filename = misconfig["Target"]
                 if startline and endline is None:
                     filelink = f"https://gibhub.com/{repo}/blob/main/{filename}"
                 else:
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
                 continue
 
-        row += (
-            f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
-        )
+        row += f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
         critical_count += 1
 
-
     for misconfig in highs:
-        misconfig['Severity'] = '${\color{Orange}{\\textsf{High}}}$'
+        misconfig["Severity"] = "${\color{Orange}{\\textsf{High}}}$"
         if misconfig["CauseMetadata"]:
             causedata: dict = misconfig["CauseMetadata"]
             occurrences: list = causedata.get("Occurrences", [])
             if occurrences:
                 for occurrence in occurrences:
-                    startline = occurrence['Location']['StartLine']
-                    endline = occurrence['Location']['EndLine']
-                    filename = occurrence['Filename']
+                    startline = occurrence["Location"]["StartLine"]
+                    endline = occurrence["Location"]["EndLine"]
+                    filename = occurrence["Filename"]
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
             else:
                 startline = causedata.get("StartLine", int)
                 endline = causedata.get("EndLine", int)
-                filename = misconfig['Target']
+                filename = misconfig["Target"]
                 if startline and endline is None:
                     filelink = f"https://gibhub.com/{repo}/blob/main/{filename}"
                 else:
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
                 continue
 
-        row += (
-            f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
-        )
+        row += f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
         high_count += 1
 
     for misconfig in mediums:
-        misconfig['Severity'] = '${\color{yellow}{\\textsf{Medium}}}$'
+        misconfig["Severity"] = "${\color{yellow}{\\textsf{Medium}}}$"
         if misconfig["CauseMetadata"]:
             causedata: dict = misconfig["CauseMetadata"]
             occurrences: list = causedata.get("Occurrences", [])
             if occurrences:
                 for occurrence in occurrences:
-                    startline = occurrence['Location']['StartLine']
-                    endline = occurrence['Location']['EndLine']
-                    filename = occurrence['Filename']
+                    startline = occurrence["Location"]["StartLine"]
+                    endline = occurrence["Location"]["EndLine"]
+                    filename = occurrence["Filename"]
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
             else:
                 startline = causedata.get("StartLine", int)
                 endline = causedata.get("EndLine", int)
-                filename = misconfig['Target']
+                filename = misconfig["Target"]
                 if startline and endline is None:
                     filelink = f"https://gibhub.com/{repo}/blob/main/{filename}"
                 else:
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
                 continue
 
-        row += (
-            f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
-        )
+        row += f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
         medium_count += 1
 
     for misconfig in lows:
-        misconfig['Severity'] = '${\color{green}{\\textsf{Low}}}$'
+        misconfig["Severity"] = "${\color{green}{\\textsf{Low}}}$"
         if misconfig["CauseMetadata"]:
             causedata: dict = misconfig["CauseMetadata"]
             occurrences: list = causedata.get("Occurrences", [])
             if occurrences:
                 for occurrence in occurrences:
-                    startline = occurrence['Location']['StartLine']
-                    endline = occurrence['Location']['EndLine']
-                    filename = occurrence['Filename']
+                    startline = occurrence["Location"]["StartLine"]
+                    endline = occurrence["Location"]["EndLine"]
+                    filename = occurrence["Filename"]
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
             else:
                 startline = causedata.get("StartLine", int)
                 endline = causedata.get("EndLine", int)
-                filename = misconfig['Target']
+                filename = misconfig["Target"]
                 if startline and endline is None:
                     filelink = f"https://gibhub.com/{repo}/blob/main/{filename}"
                 else:
                     filelink = f"https://github.com/{repo}/blob/main/{filename}?plain=1#L{str(startline)}-L{str(endline)}"
                 continue
 
-        row += (
-            f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
-        )
+        row += f"| {misconfig['Severity']} | [{filename}]({filelink}) | [{misconfig['ID']}]({misconfig['PrimaryURL']}) | {misconfig['Message']} |\n"
         low_count += 1
 
-    critical_findings: str = "${\color{red}{\\textsf{Critical:" + str(critical_count) + "}}}$"
+    critical_findings: str = (
+        "${\color{red}{\\textsf{Critical:" + str(critical_count) + "}}}$"
+    )
     high_findings: str = "${\color{Orange}{\\textsf{High: " + str(high_count) + "}}}$"
-    medium_findings: str = "${\color{yellow}{\\textsf{Medium: " + str(medium_count) + "}}}$"
+    medium_findings: str = (
+        "${\color{yellow}{\\textsf{Medium: " + str(medium_count) + "}}}$"
+    )
     low_findings: str = "${\color{green}{\\textsf{Low: " + str(low_count) + "}}}$"
     comment_body: str = f"""
 <Scan Results>
@@ -296,7 +290,6 @@ def generate_comment(
 """
     comment_body += row
     return comment_body
-
 
 
 def main():
