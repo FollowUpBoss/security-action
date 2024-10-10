@@ -6,7 +6,7 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 	exit 1
 fi
 
-scanType="${INPUT_SCAN_TYPE:-branch}"
+scanType="${INPUT_SCAN_TYPE}"
 
 # Run Trivy and generate results
 if [ "${scanType}" == "diff" ]; then

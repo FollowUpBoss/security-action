@@ -100,9 +100,9 @@ def comments(comment_body: str) -> None:
 def parse_results(data: ReportDict) -> Iterator[Report]:
     try:
         results = data["Results"]
-    except Exception as e:
-        raise KeyError(f" The JSON entry does not contain the Results key. Error {e}")
-        # Add function to comment 0 findings
+    except KeyError:
+        comment = zero_findings()
+        comments(comment)
     if not isinstance(results, list):
         raise KeyError(
             f"The JSON entry Results section is not a list, got: {type(results).__name__}"
