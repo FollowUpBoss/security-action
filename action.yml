@@ -17,3 +17,4 @@ runs:
   image: "Dockerfile"
   env:
     GITHUB_TOKEN: ${{ inputs.token }}
+    INPUT_SCAN_TYPE: ${{ inputs.scan-type }}
