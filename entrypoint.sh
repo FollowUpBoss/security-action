@@ -6,18 +6,6 @@ if [ -z "${GITHUB_TOKEN-}" ]; then
 	exit 1
 fi
 
-git diff origin origin/${GITHUB_HEAD_REF} > diff
-#PR=`echo $GITHUB_REF_NAME | cut -d '/' -f1`
-
-# Get list of files changed by the PR Branch
-#files='$(curl -L \
-#  -H "Accept: application/vnd.github+json" \
-#  -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-#  "https://api.github.com/repos/${GITHUB_REPOSITORY}/PULLS/${PR}/files" | jq ".[] | .filename")'
-
-# Copy the modified/added files to a folder
-#mkdir files
-#for file in $files; do cp "$file" files; done
 
 # Run Trivy and generate results
 trivy rootfs --format json --scanners misconfig --ignorefile .circleci/security/.trivyignore.yaml -o report.json diff
