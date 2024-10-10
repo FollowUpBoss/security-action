@@ -103,6 +103,7 @@ def parse_results(data: ReportDict) -> Iterator[Report]:
     except KeyError:
         comment = zero_findings()
         comments(comment)
+        sys.exit(0)
     if not isinstance(results, list):
         raise KeyError(
             f"The JSON entry Results section is not a list, got: {type(results).__name__}"
