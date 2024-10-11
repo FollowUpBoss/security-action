@@ -153,7 +153,9 @@ def zero_findings() -> str:
 
 #### For full details connect to staging VPN and see [Defectdojo](https://defectdojo.reclients.com/product/7/finding/open?verified=true)
 
-#### :godmode: No Findings!
+#### Scan Summary:
+
+:godmode: You've done well! No Findings! :godmode:
 """
     return comment_body
 
